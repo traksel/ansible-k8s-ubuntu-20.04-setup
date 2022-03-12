@@ -1,0 +1,6 @@
+---
+- name: k8s-cd
+  hosts: master-node
+  gather_facts: no
+  roles:
+    - k8s-cd

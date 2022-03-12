@@ -1,0 +1,22 @@
+---
+- name: local
+  hosts: local
+  gather_facts: no
+  roles:
+    - k8s-hosts
+
+- name: master-node
+  hosts: master-node
+  gather_facts: no
+  roles:
+    - k8s-master
+
+- name: agent-node
+  hosts: agent-node
+  gather_facts: no
+  roles:
+    - k8s-agent
+
+# TODO:
+# Write cleanWorkSpace Role
+# ...

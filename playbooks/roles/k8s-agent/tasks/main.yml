@@ -1,0 +1,129 @@
+- name: Prepare workspace
+  block:
+    - name: Kubeadm reset force
+      shell:
+        kubeadm reset -f
+      become: yes
+      become_method: sudo
+  rescue:
+    - name: Kubeadm reset force
+      shell: |
+        echo 'errorException: Kubeadm not installed'
+  when: clean_install | default('true') | bool == true
+
+- name: Make tmp directory for hosts file
+  shell: |
+    mkdir -p /etc/cloud/templates/.d/
+  become: yes
+  become_method: sudo
+
+- name: Copy tmp hosts file to server
+  copy:
+    src: "files/hosts.debian.tmpl"
+    dest: "/etc/cloud/templates/.d/hosts.debian.tmpl"
+  become: yes
+  become_method: sudo
+  when: hosts | default('true') | bool == true
+
+- name: Filling default server `hosts` file from template
+  shell: |
+    cat /etc/cloud/templates/.d/hosts.debian.tmpl >> /etc/cloud/templates/hosts.debian.tmpl
+    cat /etc/cloud/templates/.d/hosts.debian.tmpl >> /etc/hosts
+    rm -rf /etc/cloud/templates/.d/hosts.debian.tmp
+  become: yes
+  become_method: sudo
+  when: hosts | default('true') | bool == true
+
+- name: Install `curl apt-transport-https git docker docker.io`
+  apt:
+    pkg:
+      - curl
+      - apt-transport-https
+      - git
+      - docker
+      - docker.io
+    update_cache: yes
+  become: yes
+  become_method: sudo
+
+- name: Enable docker autostart
+  shell: |
+    systemctl enable docker
+  become: yes
+  become_method: sudo
+
+- name: Copy docker configfile to remote server (/etc/docker/daemon.json)
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+  become: yes
+  become_method: sudo
+
+- name: Restart Docker
+  shell: |
+    systemctl restart docker
+  become: yes
+  become_method: sudo
+
+- name: Unable memory swap
+  shell: |
+    swapoff -a
+    echo "#/swap.img      none    swap    sw      0       0" >> /etc/fstab
+  become: yes
+  become_method: sudo
+  
+- name: Load advanced core modules (br_netfilter; overlay)
+  shell: |
+    echo -e 'br_netfilter\noverlay' >> /etc/modules-load.d/k8s.conf
+    modprobe br_netfilter
+    modprobe overlay
+    lsmod | egrep 'br_netfilter|overlay'
+  become: yes
+  become_method: sudo
+
+- name: Change core parameters
+  shell: |
+    echo 'net.bridge.bridge-nf-call-ip6tables = 1\nnet.bridge.bridge-nf-call-iptables = 1' >> /etc/sysctl.d/k8s.conf
+    sysctl --system
+  become: yes
+  become_method: sudo
+
+- name: k8s pre-installation moves
+  shell: |
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | tee -a /etc/apt/sources.list.d/kubernetes.list
+  become: yes
+  become_method: sudo
+
+- name: Installing k8s tools (kubeactl, kubeadm, kubelet)
+  apt:
+    pkg:
+      - kubectl
+      - kubeadm
+      - kubelet
+    update_cache: yes
+  become: yes
+  become_method: sudo
+
+- name: Hold k8s tools version
+  shell: |
+    apt-mark hold kubectl
+    apt-mark hold kubeadm
+    apt-mark hold kubelet
+  become: yes
+  become_method: sudo
+
+- name: Copy join command file to the host
+  copy:
+    src: "{{ inventory_dir }}/group_vars/all/join_command"
+    dest: /home/admin/join_command
+  become: yes
+  become_method: sudo
+  when: clean_install | default('true') | bool == true
+  
+- name: Join control-plane
+  shell: |
+    $(cat join_command)
+  become: yes
+  become_method: sudo
+  when: clean_install | default('true') | bool == true

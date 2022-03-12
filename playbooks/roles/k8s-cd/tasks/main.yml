@@ -1,0 +1,4 @@
+- name: Delivery file to k8s-master
+  ansible.builtin.copy:
+    src: "{{ user_path }}"
+    dest: $HOME

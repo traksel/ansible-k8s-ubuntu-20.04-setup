@@ -1,0 +1,14 @@
+- name: Update hosts for master nodes
+  template:
+    src: "{{ role_path }}/templates/master_hosts"
+    dest: "{{ workspace }}/inventory/k8s-master/hosts"
+
+- name: Update hosts for agent nodes
+  template:
+    src: "{{ role_path }}/templates/agent_hosts"
+    dest: "{{ workspace }}/inventory/k8s-agent/hosts"
+
+- name: Update hosts for remote servers
+  template:
+    src: "{{ role_path }}/templates/hosts.debian.tmpl"
+    dest: "{{ playbook_dir }}/files/hosts.debian.tmpl"

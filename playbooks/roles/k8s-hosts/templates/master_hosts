@@ -1,0 +1,4 @@
+[master-node]
+{% for item in ip_k8s_master %} 
+{{ item.ip }} ansible_connection=ssh ansible_user=admin
+{% endfor %}

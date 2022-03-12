@@ -1,0 +1,7 @@
+{% for item in ip_k8s_master %}
+{{ item.ip }} {{ item.name }}.k8s.local {{ item.name }}
+{% endfor %}
+
+{% for item in ip_k8s_agent %}
+{{ item.ip }} {{ item.name }}.k8s.local {{ item.name }}
+{% endfor %}
