@@ -17,6 +17,8 @@
   roles:
     - k8s-agent
 
-# TODO:
-# Write cleanWorkSpace Role
-# ...
+- name: cleanWorkSpace
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - k8s-cleanws

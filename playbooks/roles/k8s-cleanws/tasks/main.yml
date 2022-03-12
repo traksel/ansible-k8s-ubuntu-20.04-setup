@@ -1,0 +1,3 @@
+- name: cleanWorkSpace
+  shell: |
+    rm -f {{ workspace }}/inventory/k8s-agent/group_vars/all/join_command
