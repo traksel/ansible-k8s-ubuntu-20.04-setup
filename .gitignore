@@ -1,5 +1,1 @@
 /inventory/k8s-agent/group_vars/all/join_command
-/inventory/k8s-hosts/group_vars/all/hosts.yml
-/inventory/k8s-agent/hosts
-/inventory/k8s-master/hosts
-/playbooks/files/hosts.debian.tmpl
